@@ -1,0 +1,2 @@
+#!/bin/bash
+ssh -t sreedhars@10.175.17.66 "cd /dbc/pa-dbc1111/nalagappan/lanier-goat; bash"
