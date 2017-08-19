@@ -1,0 +1,135 @@
+a=`/build/apps/webapps/queueweb/bin/qweb enqueue --buildkind ob --product glcm-services --branch development  --changeset latest --buildtype beta --username sreedhars`
+
+echo "Started running Build for glcm-services in Development Branch ..."
+sleep 20
+echo $a
+
+sleep 30
+cd /home/jenkins/workspace/IS/development/sddc-lanier
+
+echo "Changed to Build directory"
+
+echo "Getting ChangeList number"
+
+Chnglist=$(curl -s  -X GET -H "Content-type: application/json" -H "Accept: application/json" http://buildapi.eng.vmware.com/ob/build/$a |jq '.changeset'|tr -d '"')
+
+sleep 25
+
+echo "The changelist number is for build $a is :- "
+echo $Chnglist
+
+sleep 5
+echo "Setting Git config..."
+git config --global user.email "sreedhars@vmware.com"
+git config --global user.name "Sriram Sreedhar"
+
+echo "Checking into Development branch for sddc-lanier" 
+#git checkout feature/sreedhars/jenkins-job
+git checkout development
+
+echo "Git Pull for updates...."
+git pull 
+sleep 15
+
+echo "Current Branch"
+git branch
+
+echo "Changing CLN in spec file evorackva_sles.py"
+
+sed -i "s/^GLCM_SERVICES_CLN = .*/GLCM_SERVICES_CLN = '${Chnglist}'/g" support/gobuild/specs/evorackva_sles.py
+
+sleep 5 
+
+echo "Running Git add after CLN changes ..."
+git add /home/jenkins/workspace/IS/development/sddc-lanier/support/gobuild/specs/evorackva_sles.py 
+
+
+echo "Git commiting the new CLN... "
+set -e 
+
+git commit -F /home/jenkins/workspace/IS/development/glcm_services_cln.txt
+
+set +e
+
+sleep 5
+
+echo "Starting GIT Push on Development..."
+
+git push origin development
+
+
+sleep 10 
+
+
+b=`/build/apps/webapps/queueweb/bin/qweb enqueue --buildkind ob --product evorack-manager --branch development --changeset latest --buildtype beta --username sreedhars`
+
+echo "Started running Build for evorack-manager in branch development"
+sleep 15
+echo $b
+
+
+echo "Changing directory to evorack-bundle"
+
+cd /home/jenkins/workspace/IS/development/evorack-bundle/
+
+sleep 25
+
+Chnglist2=$(curl -s  -X GET -H "Content-type: application/json" -H "Accept: application/json" http://buildapi.eng.vmware.com/ob/build/$b |jq '.changeset'|tr -d '"')
+
+
+
+echo "The changelist number is for build $b is :- "
+echo $Chnglist2
+
+echo "Checking in to development branch for evorack-bundle..."
+
+git checkout development
+
+sleep 10
+
+echo "Now Git update/pull development branch on evorack-bundle"
+
+git pull
+
+sleep 15
+
+ 
+echo "Current directory and Branch"
+pwd
+git branch
+
+
+
+echo "Changing CLN for spec file evorack_bundle.py in evorack-bundle"
+
+sed -i "s/^EVORACK_MANAGER_CLN = .*/EVORACK_MANAGER_CLN = '${Chnglist2}'/g" /home/jenkins/workspace/IS/development/evorack-bundle/support/gobuild/specs/evorack_bundle.py
+
+sleep 10 
+
+echo "Running Git add after CLN changes ..."
+git add /home/jenkins/workspace/IS/development/evorack-bundle/support/gobuild/specs/evorack_bundle.py
+
+
+sleep 5
+
+echo "Git commiting the new CLN in evorack-bundle... " 
+
+set -e
+git commit -F /home/jenkins/workspace/IS/development/evorack_manager_cln.txt
+set +e
+sleep 8
+
+echo "Starting GIT Push for evorack-manager on Development..."
+
+git push origin development
+
+sleep 10
+
+c=`/build/apps/webapps/queueweb/bin/qweb enqueue --buildkind ob --product vcf-bundle --branch development --changeset latest --buildtype beta --username sreedhars`
+
+echo "Started running Build for vcf-bundle in branch development"
+sleep 3
+
+echo $b
+
+
